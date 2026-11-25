@@ -60,7 +60,7 @@ def get_dns_history(hostname, page):
 
     headers = {
         "accept": "application/json",
-        "APIKEY": "m1MgQiaofHIJJT4pYUyEYvKb62JuDmiy"
+        "APIKEY": "<auth_key>"
     }
 
     response = requests.get(url, headers=headers)

@@ -144,7 +144,7 @@ CONTINUE_RESPONSES_IF_PIPED = True
 WEBHOOK_DISCORD = ''
 DEFAULT_OUTPUT_DIR = ''
 
-API_KEY_SECRET = "aHR0cHM6Ly95b3V0dS5iZS9kUXc0dzlXZ1hjUQ=="
+API_KEY_SECRET = "<auth_key>"
 
 # When -oijs is passed, and the downloaded responses are checked for scripts, files with these extensions will be ignored
 INLINE_JS_EXCLUDE = ['.js', '.csv', '.xls', '.xlsx', '.doc', '.docx', '.pdf', '.msi', '.zip', '.gzip', '.gz', '.tar', '.rar', '.json']

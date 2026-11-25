@@ -237,7 +237,7 @@ asn_and_its_ips = dict()
 for asn in ASN_list:
     # print(asn)
     time.sleep(1)
-    cidrs_res = http.request('GET',f'https://asn-lookup.p.rapidapi.com/api?asn={asn}', headers={"X-RapidAPI-Key":"a07e9647fbmsh9401771dcb0a4cdp12d1edjsn31fa0aca3ade","X-RapidAPI-Host": "asn-lookup.p.rapidapi.com"})
+    cidrs_res = http.request('GET',f'https://asn-lookup.p.rapidapi.com/api?asn={asn}', headers={"X-RapidAPI-Key":"<auth_key>","X-RapidAPI-Host": "asn-lookup.p.rapidapi.com"})
     for i in json.loads(cidrs_res.data.decode('utf-8')):
         try:
             for cidr in i["ipv4_prefix"]:

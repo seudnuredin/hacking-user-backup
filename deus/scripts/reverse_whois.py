@@ -7,7 +7,7 @@ import re
 import time
 import subprocess
 
-whoisxmlapi_keys = ["at_mHadrRRnMDIbAYlXqhEoOMjrq9J9U"]
+whoisxmlapi_keys = ["<auth_key>"]
 http = urllib3.PoolManager()
 
 def deduct_whois_chunks():

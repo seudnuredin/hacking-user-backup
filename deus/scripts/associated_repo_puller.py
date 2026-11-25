@@ -647,7 +647,7 @@ def grep_app_skip_handler(grep_app_params):
         resources.extend(param_resources)
 
 
-github_access_token_header =  { "Authorization": "Bearer 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"}
+github_access_token_header =  { "Authorization": "Bearer <auth_key>"}
 
 github_undownloadable_resources = dict()
 def get_downloadable_resource(resource_url):
