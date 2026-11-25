@@ -1,0 +1,55 @@
+requires path_brute_force_without_auth.txt
+requires param_miner.txt
+requires passive_crawling.txt
+requires subtarget.txt
+
+cat ./../hosts.txt | grep -F subdomain.subtarget.tld | anew -q urls.txt
+cat ./../hosts.txt | anew -q urls.txt
+
+#~/scripts/runiq <(find ./../path_brute_force/path_brute_force_with* | grep method | xargs cat | grep -F -v -e .css -e .jpeg -e .jpg -e .png -e .svg -e .gif -e .tiff -e .tif -e .webp -e .bmp -e .ico -e .ttf -e .woff -e .woff2 -e .otf -e .mp3 -e .wav -e .webm -e .aac -e .ogg -e .au -e .aiff -e .aif -e .mp4 -e .mpeg -e .mpg -e .ogv -e .ts -e .avi -e .flv -e .wmv -e .mov -e .3gp -e .eot -e .apk -e .bin -e .exe -e .msi -e .dll -e .pdf -e .application -e .pjpeg) | awk '{print $2}' | anew urls.txt > new_urls.txt
+#nohup rota --config /home/deus/documents/rota_config.yml > /dev/null 2>&1 &
+#nohup httpx -l new_urls.txt -timeout 60 -nc -threads 1000 -rl 100 -fr -silent -H req.txt -proxy http://127.0.0.1:8080 -o new_urls_output.txt -H "X-HackerOne-Research: seudxs" -H "User-Agent: Mozilla/5.0 Windows NT 10.0 Win64 AppleWebKit/537.36 Chrome/69.0.3497.100" &
+#cat new_urls_output.txt | awk '{gsub(/^\[|\]$/, "", $2); print ($2 ? $2 : $1)}' | unfurl format %s://%d%P%p | sort -u | grep -i -F -f ./../../domains.txt > new_urls.txt
+
+# for getting links for home
+cat ./../rate_limit_config_all.jsonl  | jq -r .url | sort -u > urls.txt
+cat ./../rate_limit_config_all.jsonl  | jq -r .url | sort -u | sed 's|$|/nonexisttttent|' | anew -q urls.txt
+
+# for getting links of sub
+nohup bash ~/scripts/directory_based_urls_extraction.sh 100 htm url ./../path_brute_force/* &
+
+# basic
+nohup python3.7 ~/scripts/active_crawling_and_spidering.py -ul urls.txt -krl 1000 -kp 1000 -r req.txt -fs ./../../domains.txt -nhl -cd 1h -rc ./../rate_limit_config_all.jsonl -oh &
+nohup python3.7 ~/scripts/active_crawling_and_spidering.py -ul urls.txt -krl 1000 -kp 1000 -r req.txt -fs ./../../domains.txt -nhl -cd 1h -rc ./../rate_limit_config_all.jsonl -os -sd 2 &
+
+# headless. lower coz of server resource issues!
+nohup python3.7 ~/scripts/active_crawling_and_spidering.py -ul urls.txt -krl 100 -kp 10 -r req.txt -fs ./../../domains.txt -cd 1h -rc ./../rate_limit_config_all.jsonl -oh &
+nohup python3.7 ~/scripts/active_crawling_and_spidering.py -ul urls.txt -krl 100 -kp 10 -r req.txt -fs ./../../domains.txt -cd 1h -rc ./../rate_limit_config_all.jsonl -os -sd 2 &
+
+
+
+
+# if you used parallel to merge directories PS. the ending slash is important!
+?rsync -a --remove-source-files --ignore-existing ./sub_*_traffic/ merged_output/
+
+# for recognizing a subpath of common path that's needlessly getting downloaded and therefore slowing the process down. we put it in -cos as /<subpath> 
+cat ./sub_1_traffic | unfurl paths | sort -u | tr '/' '\n' | sort | uniq -c | sort -nr | head -n 30
+
+
+# for downloading js
+cp source_links.txt source_links.txt.prev
+find ./../path_brute_force/ | grep -F method_and_url_file_within_threshold | xargs awk 'tolower($3) ~ /javascript/ { print $2 }' | sort -u > source_links.txt
+cat urls_old.txt <(cat ./*traffic*/index.txt | awk '$3 != "(200" && $3 != "(OK)" && $4 != "OK)" { print $2 }') | grep -i -F ".js" | sort -u | anew -q source_links.txt
+
+nohup rota --config /home/deus/documents/rota_config.yml -p 9001 > /dev/null 2>&1 &
+nohup httpx -l source_links.txt -timeout 30 -nc -threads 100 -rl 100 -silent -proxy http://127.0.0.1:9001 -fr -sr -srd ./downloaded_js -H "X-HackerOne-Research: seudxs" -H "User-Agent: Mozilla/5.0 Windows NT 10.0 Win64 AppleWebKit/537.36 Chrome/69.0.3497.100" &
+
+
+
+
+# for downloading nextjs
+httpx -l ./../hosts.txt -path <(echo /login) -http2 -timeout 30 -mc 200 -o output.txt -H "X-HackerOne-Research: seudxs" -H "User-Agent: Mozilla/5.0 Windows NT 10.0 Win64 AppleWebKit/537.36 Chrome/69.0.3497.100"
+cat ./output.txt  | awk '{print $1}' | anew -q ./hosts.txt
+
+nohup python3 ~/scripts/nextjs_js_extractor.py -uf ./../hosts.txt &
+

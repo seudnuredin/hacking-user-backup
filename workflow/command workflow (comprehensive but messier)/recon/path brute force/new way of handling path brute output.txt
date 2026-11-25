@@ -1,0 +1,37 @@
+for getting location header's value on response's with 3xx:
+cat ./../path_brute_force_with*/*_path_brute_output_www.pandora.com*.json | parallel --pipe -j$(nproc) "jq -r 'select(.url != null and (.status | tostring | startswith(\"3\")) and .headers[\"location\"] != null) | .headers[\"location\"]'" | sort -u
+
+
+Stage 1:
+cat ./../path_brute_force_with*/*_path_brute_output_www.example.com*.json | parallel --pipe -j$(nproc) "jq .status" | sort | uniq -c | sort -nr | grep -v null
+
+Stage 2:
+
+cat ./../path_brute_force_with*/*_path_brute_output_www.example.com*.json | parallel --pipe -j$(nproc) "jq 'select(.status == 500 and .url != null) | .length'" | sort | uniq -c | sort -nr
+cat ./../path_brute_force_with*/*_path_brute_output_www.example.com*.json | parallel --pipe -j$(nproc) "jq 'select(.status == 500 and .url != null) | .words'" | sort | uniq -c | sort -nr
+cat ./../path_brute_force_with*/*_path_brute_output_www.example.com*.json | parallel --pipe -j$(nproc) "jq 'select(.status == 500 and .url != null) | .lines'" | sort | uniq -c | sort -nr
+
+Stage3:
+# for handling ones with unique content:
+
+cat ./../path_brute_force_with*/*_path_brute_output_www.example.com*.json | parallel --pipe -j$(nproc) "jq -r 'select(.url != null and .status == 200 and .length == 102) | \"\(.method) \(.url)\" '"
+cat ./../path_brute_force_with*/*_path_brute_output_www.example.com*.json | parallel --pipe -j$(nproc) "jq -r 'select(.url != null and .status == 200 and .words == 102) | \"\(.method) \(.url)\" '"
+cat ./../path_brute_force_with*/*_path_brute_output_www.example.com*.json | parallel --pipe -j$(nproc) "jq -r 'select(.url != null and .status == 200 and .lines == 102) | \"\(.method) \(.url)\" '"
+
+# for handling ones with non-unique content:
+
+nohup bash ~/scripts/path_brute_force_output_reader.sh all all 1000 ./*.json &
+
+# preliminary for identifying hackable servers after sending GET only requests
+cat method_and_url_file_words* | xargs cat | awk '{print $2}' | unfurl domains | sort | uniq -c | sort -nr
+
+# for keyword based filtering for uncontrollably unique length, word, lines of paths
+find method_and_url_file_words.*.1000.www.snapfish.com*.txt | xargs cat | sort -u | awk '{print $2}' | unfurl paths | sort -u | tr '/' '\n' | sort | uniq -c | sort -nr | head -n 30
+
+# identifying non-noisy endpoints
+
+find ./../path_brute_forc* | grep -F method_ | xargs tail
+
+find ./../path_brute_forc* | grep -F method_ | xargs head
+
+

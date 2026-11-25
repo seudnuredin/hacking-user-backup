@@ -1,0 +1,5 @@
+requires target.txt
+
+performing CRU operations using browser while intercepting interactions with burp suite and rsyncing it to a specific *input* named directory
+
+rsync -chavzP --update --stats ./output.burp deus@5.75.171.94:/home/deus/targets/airslate_inc/signnow/BAC/bac_with_limited_auth/attacker_input

@@ -1,0 +1,12 @@
+
+manually figuring out working values in burp starting from GET requests to non-GET requests coz 
+it's easier to learn a parameter associated with value from GET requests' responses
+
+echo -n <json body> | sed 's/\\/\\\\/g; s/"/\\"/g'
+
+echo -n <json body> | python3 -c "import sys, json;print(json.dumps(sys.stdin.read().replace('\n', '\\\n').replace('\t','\\\t'))[1:-1])"
+
+echo -n <escaped json body> | sed 's/\\\\/\\/g; s/\\"/"/g'
+
+echo -n <escaped json body> | python3 -c 'import sys,json; print(json.loads(sys.stdin.read().strip()))'
+

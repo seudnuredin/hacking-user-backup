@@ -1,0 +1,34 @@
+requires bac_with_limited_auth.txt
+requires path_brute_force_with_pattern.txt
+requires param_miner.txt
+
+nohup python3.7 -u ~/scripts/bac.py -r req.txt -te 30 -ts ./../seudxs_1_token_gen.py -rsl ./../param_miner/param_miner_output_162.jsonl -cc 1000 -a /logout,/signout,/sign-out,/log-out,/sign_out,/log_out,/deleteuser -rc ./../rate_limit_config_all.jsonl > bac.log 2>&1 &
+
+nohup python3 ~/scripts/fuzz_reader.py -ft status -ip all_parametersss > injection_points.txt&
+nohup python3 ~/scripts/fuzz_reader.py -ft status -ip example_param > injection_points.txt&
+
+nohup python3 ~/scripts/fuzz_reader.py -ft body -ip all_parametersss -jk errors  > errors_key_shared.txt&
+nohup python3 ~/scripts/fuzz_reader.py -ft body -ip example_param -jk errors  > shared_output_files.txt&
+
+cat documentId_based_status_injection_points.txt | awk '{print $1}' | grep -v stat | sed 's/json/body/g' | sed 's/^/.\/output\/normal\//g' | xargs cat
+
+
+nl injection_points.txt | grep status:
+
+cat injection_points.txt | sed -n '33952,44001p' | grep -Fv status: | grep -i -e id -e slug -e email -e key -e subpath -e ref | sed 's/json/body/g' | xargs cat | jq
+cat injection_points.txt | grep -Fv status: | sed 's|.json|.body|g' > all_paths.txt
+cat injection_points.txt | sed -n '33952,44001p' | grep -Fv status: | sed 's|.json|.body|g' > interested_paths.txt
+
+
+
+
+#cat ./../param_miner/param_miner_output_162.jsonl | jq -r ".. | strings" | awk 'length($0) > 3' | sort -u | grep -Fxv -f <(cat all_paths.txt | grep -Fvx -f interested_paths.txt  | xargs jq -r ".. | strings") > patterns.txt
+
+cat ./../param_miner/param_miner_output_162.jsonl | jq -r ' .. | strings' | awk 'length($0) > 3' | sort -u | grep -Fxv -f <(cat all_paths.txt | xargs jq -r ' .. | strings' | grep -Fvx -f <(cat interested_paths.txt | xargs jq -r ' .. | strings') ) > patterns.txt
+
+grep -R -l -F -f patterns.txt  ./output/ | wc -l
+
+nohup python3 ~/scripts/bac_vuln_output_filter.py -pf all_paths.txt -ipf interested_paths.txt > bac_vuln_output_paths.txt &
+
+cat bac_reqs_and_their_signatures.jsonl | grep -F -f <(cat interested_paths.txt | cut -d _ -f3 | sort -u) --color=always | sort -u
+

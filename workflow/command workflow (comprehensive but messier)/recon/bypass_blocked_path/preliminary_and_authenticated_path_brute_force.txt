@@ -1,0 +1,29 @@
+# preliminary test without pattern
+1. nohup bash ~/scripts/prepare_preliminary_test_without_pattern.sh &
+2. nohup python3 -u /home/deus/scripts/path_bruteforce.py -u hosts.txt -w ./preliminary_wordlist.txt -m GET,POST,PUT,PATCH -rl 400 -r req.txt -ts token_gen.py -te 15 -nh 4 -rc ./../../rate_limit_config_min_50.jsonl -s /150310241060 > path_bruteforce.log 2>&1 &
+
+# preliminary test with pattern for directory
+1. nohup bash ~/scripts/prepare_preliminary_test_with_pattern_for_directory.sh &
+2. nohup python3 -u /home/deus/scripts/path_bruteforce.py -u hosts.txt -w ./preliminary_wordlist.txt -m GET,POST -rl 400 -r req.txt -ts token_gen.py -te 15 -nh 4 -rc ./../../rate_limit_config_min_50.jsonl -p ./ -sap -sbp -ps 5000 -s /150310241060 > path_bruteforce.log 2>&1 &
+
+# recursive preliminary test with pattern directory (don't forget to extract method_and_url_file...)
+1. cp ./../get_directories_patterns/pw_* ./
+2. nohup bash ~/scripts/prepare_preliminary_test_without_pattern.sh &
+3. nohup python3 -u /home/deus/scripts/path_bruteforce.py -u hosts.txt -w ./preliminary_wordlist.txt -m GET,POST -rl 400 -r req.txt -ts token_gen.py -te 15 -nh 4 -rc ./../../rate_limit_config_min_50.jsonl -p ./ -sbp -s /150310241060 > path_bruteforce.log 2>&1 &
+
+# common api-part based preliminary test
+1. nohup python3 -u /home/deus/scripts/path_bruteforce.py -u hosts.txt -w ~/documents/httparchive_apiroutes_2024_05_28.min.txt -m GET,POST -rl 400 -r req.txt -ts token_gen.py -te 15 -nh 4 -rc ./../../rate_limit_config_min_50.jsonl -p ./ -sbp -s /150310241060 > path_bruteforce.log 2>&1 &
+
+# preliminary test with pattern. if you're feeling gracious... or for 3xx/403/401 servers and directories and maybe servers without a working path regardless of their status like 404
+1. nohup bash ~/scripts/prepare_preliminary_test_with_pattern.sh &
+cat potential_dir.txt | rg --text -e '^[^/]*(/[^/]*){1,1}$' | cut -d / -f -1  | sort | uniq -c | sort -nr # finds useless and numerous ones to delete
+2. nohup python3 -u /home/deus/scripts/path_bruteforce.py -u hosts.txt -w ./preliminary_wordlist.txt -m GET,POST -rl 3000 -r req.txt -ts token_gen.py -te 15 -nh 1 -si joint-A1Qp81hX4Q -rc ./../../rate_limit_config_min_50.jsonl -p ./ -sap -sbp -s /150310241060 > path_bruteforce.log 2>&1 &
+
+
+nohup bash ~/scripts/path_brute_force_output_reader.sh all all 10 ./*.json &
+
+# identifying non-noisy endpoints
+
+find ./../path_brute_forc* | grep -F method_ | xargs tail
+
+find ./../path_brute_forc* | grep -F method_ | xargs head

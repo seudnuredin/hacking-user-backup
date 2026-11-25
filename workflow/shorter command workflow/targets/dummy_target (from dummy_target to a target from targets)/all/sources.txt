@@ -1,0 +1,11 @@
+requires target.txt
+requires extracted_paths_and_params.txt
+
+# basic necessary operation
+
+nohup python3 ~/scripts/source_based.py -f js_download -t subtarget -c / -l 10000 &
+
+jq -r ".. | strings" ./../output.json | sort -u > cdn_hosts.txt
+nohup python3 ~/scripts/source_based.py -f html_download -t cdn_hosts.txt -c / -l 10000 &
+nohup python3 ~/scripts/source_based.py -f html_download -t subtarget -c / -l 10000 &
+

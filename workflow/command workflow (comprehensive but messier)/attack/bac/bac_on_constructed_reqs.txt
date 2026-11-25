@@ -1,0 +1,21 @@
+requires bac_with_limited_auth.txt
+requires path_brute_force_with_pattern.txt
+requires param_miner.txt
+
+nohup python3.7 -u ~/Documents/scripts/recon/request_to_record.py -r ./req.txt -rsl ./param_miner_output_0.json --proxy http://192.168.233.128:8080 -a /logout,/signout,/sign-out,/log-out,/sign_out,/log_out,/deleteuser > request_to_record.log 2>&1 &
+
+python3.7 -u ~/Documents/scripts/recon/id_extractor.py -ik id,slug,mail,name > ids.txt
+
+nohup python3.7 -u ~/scripts/bac_on_constructed_reqs.py -r ./req.txt -te 30 -ts ./../../seudxs_1_token_gen.py -mip 2 -rsl ./../../param_miner/param_miner_output_0.json -w ./ids.txt -a /logout,/signout,/sign-out,/log-out,/sign_out,/log_out,/deleteuser -rc ./../rate_limit_config_all.jsonl > bac_on_constructed_reqs.log 2>&1 &
+
+nohup python3 ~/scripts/fuzz_reader.py -ft status -ip all_parametersss > injection_points.txt&
+nohup python3 ~/scripts/fuzz_reader.py -ft status -ip example_param > injection_points.txt&
+
+nohup python3 ~/scripts/fuzz_reader.py -ft body -ip all_parametersss -jk errors  > errors_key_shared.txt&
+nohup python3 ~/scripts/fuzz_reader.py -ft body -ip example_param -jk errors  > shared_output_files.txt&
+
+cat documentId_based_status_injection_points.txt | awk '{print $1}' | grep -v stat | sed 's/json/body/g' | sed 's/^/.\/output\/normal\//g' | xargs cat
+
+nl injection_points.txt | grep status:
+
+cat injection_points.txt | sed -n '33952,44001p' | grep -i -e id -e slug -e email -e key -e subpath -e ref | sed 's/json/body/g' | xargs cat | jq

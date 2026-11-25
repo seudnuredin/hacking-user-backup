@@ -1,0 +1,91 @@
+requires target.txt
+requires input containing dir.txt
+requires sources.txt
+requires file_operation_locator.txt
+requires path_brute_force_without_pattern.txt
+requires active_crawling_and_spidering
+requires preliminary_path_brute_force
+
+checks we should perform:
+1. ip validity
+2. cookie requirement
+3. method sensitive
+4. rate limit
+5. naming convention
+6. tech stack extensions
+7. http version identification
+
+
+# way 1 of identifying pattern
+find ./../preliminary_path_brute_force/ | grep -F sub.target.com | grep method | xargs cat | awk '{print $2}' | unfurl paths | sort -u > wordlist_for_path_pattern_prepare.txt
+~/scripts/path_pattern_prepare wordlist_for_path_pattern_prepare.txt > param_based_path_pattern_prepare_output.txt
+awk '$1 && $2' param_based_path_pattern_prepare_output.txt
+
+making a bash script for this!
+
+# way 2 of identifying pattern
+
+nohup bash ~/scripts/get_directories.sh 1000 ./../* &
+
+# way 3 of identifying pattern
+static analysis by manually reading its source code
+
+# way 4 of identifying pattern
+1. traffic analysis using path_pattern_prepare
+2. cat pw_www.example.com.txt | sort | uniq -c | sort -nr | grep -v null
+
+4. editing pw_*.txt with vim and 
+httpx -u https://api.dnsfilter.com -path test.txt -fc 401 -http2 -timeout 30 -x all -o output.txt
+
+cat ./output.txt | awk '{print $1}' | sed 's/https:\/\/api.target.com//g' > output1.txt
+
+# for finding html,js files
+cp ./../get_directories_patterns/pw_* ./
+
+nohup python3 -u ~/scripts/path_bruteforce.py -u ./../hosts.txt -r ./req.txt -m GET -urww -rl 1000 -a /logout,/signout,/sign-out,/log-out,/sign_out,/log_out,/deleteuser -w ./../../extracted_paths_and_params/extracted_path_and_param_wordlist.txt -nh 4 -p ./ -rc ./../../rate_limit_config_all.jsonl -s .html,.js > path_bruteforce.log 2>&1 &
+
+
+
+# for finding files
+nohup bash ~/scripts/get_patterns.sh target_files all ./../* &
+nohup bash ~/scripts/get_patterns.sh target_files javascript ./../* &
+cp ./get_patterns/target_files/pw_* ./
+
+nohup python3 -u ~/scripts/path_bruteforce.py -u ./../hosts.txt -r ./req.txt -m GET -urww -ucw -rl 1000 -a /logout,/signout,/sign-out,/log-out,/sign_out,/log_out,/deleteuser -w ./../../extracted_paths_and_params/extracted_path_and_param_wordlist.txt -nh 4 -p ./ -rc ./../../rate_limit_config_all.jsonl -wew .js > path_bruteforce.log 2>&1 &
+
+
+
+# for finding api paths
+cp ./../get_directories_patterns/pw_* ./
+
+nohup bash ~/scripts/get_patterns.sh target_api_paths json ./../* &
+cp ./get_patterns/target_api_paths/pw_* ./
+
+nohup python3 -u ~/scripts/path_bruteforce.py -u ./../hosts_with_paths.txt -r ./req.txt -m GET,POST -ucw -rl 1000 -a /logout,/signout,/sign-out,/log-out,/sign_out,/log_out,/deleteuser -w ./../../extracted_paths_and_params/path_wordlist.txt -nh 4 -p ./ -rc ./../../rate_limit_config_all.jsonl -s /150310241060  > path_bruteforce.log 2>&1 &
+
+nohup python3 -u ~/scripts/path_bruteforce.py -u ./../hosts_with_paths_and_params.txt -r ./req.txt -m GET,POST -ucw -rl 1000 -a /logout,/signout,/sign-out,/log-out,/sign_out,/log_out,/deleteuser -w ./../../extracted_paths_and_params/extracted_path_and_param_wordlist.txt -nh 4 -p ./ -rc ./../../rate_limit_config_all.jsonl -s /150310241060  > path_bruteforce.log 2>&1 &
+
+# for finding api paths with prefix
+
+nohup bash ~/scripts/prepare_preliminary_test_with_pattern.sh specific hosts.txt 0 &
+for file in pw_*; do
+    [ -f "$file" ] && [ "$(wc -l < "$file")" -gt 10 ] && rm "$file"
+done
+nohup python3 -u ~/scripts/path_bruteforce.py -u ./../hosts_with_paths.txt -r ./req.txt -m GET,POST -ucw -rl 1000 -a /logout,/signout,/sign-out,/log-out,/sign_out,/log_out,/deleteuser -w ./../../extracted_paths_and_params/path_wordlist.txt -nh 4 -p ./ -rc ./../../rate_limit_config_all.jsonl -s /150310241060  > path_bruteforce.log 2>&1 &
+
+nohup python3 -u ~/scripts/path_bruteforce.py -u ./../hosts_with_paths_and_params.txt -r ./req.txt -m GET,POST -ucw -rl 1000 -a /logout,/signout,/sign-out,/log-out,/sign_out,/log_out,/deleteuser -w ./../../extracted_paths_and_params/extracted_path_and_param_wordlist.txt -nh 4 -p ./ -rc ./../../rate_limit_config_all.jsonl -s /150310241060  > path_bruteforce.log 2>&1 &
+
+
+
+# for finding paths with repo wordlist
+cp ./../get_directories_patterns/pw_* ./
+
+nohup bash ~/scripts/get_patterns.sh repo json ./../* &
+cp ./get_patterns/repo/pw_* ./
+
+nohup python3 -u ~/scripts/path_bruteforce.py -u ./../hosts.txt -r ./req.txt -m GET -ucw -rl 1000 -a /logout,/signout,/sign-out,/log-out,/sign_out,/log_out,/deleteuser -w ./../../repo/final_repo_wordlist.txt -nh 4 -p ./ -rc ./../../rate_limit_config_all.jsonl > path_bruteforce.log 2>&1 &
+
+
+
+nohup bash ~/scripts/path_brute_force_output_reader.sh all all 1000 ./*.json &
+

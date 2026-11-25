@@ -1,0 +1,20 @@
+requires extracted_paths_and_params.txt
+
+checks we should perform:
+1. ip validity
+2. cookie requirement
+3. method sensitive
+4. rate limit
+5. naming convention
+6. tech stack extensions
+7. http version identification
+
+
+nohup python3 -u ~/scripts/path_bruteforce.py -u ./../../hosts.txt -m GET,POST,PUT,PATCH,DELETE -rl 400 -ucw -w ./../../extracted_paths_and_params/extracted_path_and_param_wordlist.txt -r req.txt -nh 4 -s /150310241060 > path_bruteforce.log 2>&1 &
+
+nohup python3 -u ~/scripts/path_bruteforce.py -u https://www.target.com -w ./../../extracted_paths_and_params/extracted_path_and_param_wordlist.txt -m GET,POST,PUT,PATCH,DELETE -rl 400 -r req.txt -nh 4 -s /150310241060 > path_bruteforce.log 2>&1 &
+
+cat ./../../passive_crawling/passively_crawled_urls_0.txt | grep -F -i -v -e .css -e .jpeg -e .jpg -e .png -e .svg -e .gif -e .tiff -e .tif -e .webp -e .bmp -e .ico -e .ttf -e .woff -e .woff2 -e .otf -e .mp3 -e .wav -e .webm -e .aac -e .ogg -e .au -e .aiff -e .aif -e .mp4 -e .mpeg -e .mpg -e .ogv -e .ts -e .avi -e .flv -e .wmv -e .mov -e .3gp -e .eot -e .apk -e .bin -e .exe -e .msi -e .dll -e .pdf -e .application -e .pjpeg > passively_crawled_html_urls.txt
+
+nohup python3 -u ~/scripts/path_bruteforce.py -u ./passively_crawled_html_urls.txt -m GET,POST -nd -rl 400  -nh 4 -s /150310241060 > path_bruteforce.log 2>&1 &
+

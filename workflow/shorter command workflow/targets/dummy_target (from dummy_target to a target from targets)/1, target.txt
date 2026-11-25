@@ -1,0 +1,12 @@
+using recon.py:
+1 reverse ip lookup
+2 reverse whois
+3 reverse ip lookup
+4 reverse whois
+5 tld enum
+6 passive subdomain Enum
+7 active subdomain Enum
+
+# subdomain brute force update (requires extracted_paths_and_params)
+cat ./subtarget/extracted_paths_and_params/extracted_path_and_param_wordlist.txt | sed 's|/|\n|g' | sort -u | grep "[a-zA-Z0-9.-]" | grep "[a-zA-Z]" | anew -q custom_subdomain_wordlist.txt
+active subdomain Enum after

@@ -1,0 +1,20 @@
+requires target.txt
+
+1. web apps identification using recon.py
+
+nohup httpx -l links_with_auth_keywords -timeout 10 -nc -threads 50 -rl 100 -mc 200 -fr -td -title -silent -o resolved_links_with_auth_keywords -H "X-HackerOne-Research: seudxs" -H "User-Agent: Mozilla/5.0 Windows NT 10.0 Win64 AppleWebKit/537.36 Chrome/69.0.3497.100" &
+
+cat resolved_links_with_auth_keywords | grep --text -f ./assets_of_target_and_its_acquisitions | awk '{for(i=2; i<=NF; i++) printf "%s%s", $i, (i<NF ? OFS : ORS)}' | cut -d ] -f1 | cut -d [ -f2 | sort -u
+
+grep "interested title" ./resolved_links_with_auth_keywords
+
+cp -r ./subtarget ./example.com
+
+cat subdomains_with_authentication ./../assets_of_target_and_its_acquisitions ./../reverse_whois_output ./../IP_based_reverse_dns_output | anew -q hosts.txt
+
+nohup httpx -l hosts.txt -ports 80,443,8009,8080,8081,8090,8180,8443,9443 -timeout 3 -nc -threads 100 -rl 1000 -silent -o urls.txt -H "X-HackerOne-Research: seudxs" -H "User-Agent: Mozilla/5.0 Windows NT 10.0 Win64 AppleWebKit/537.36 Chrome/69.0.3497.100" &
+
+nohup python3 ~/scripts/first_pages_scraper.py -ul urls.txt -rl 10 -krl 100 -H ./headers.txt &
+
+grep -R -F -i -e "login" -e "signin" -e "sign-in" -e "sign in" -e "log in" -e "log-in" -e "register" -e "sign-up" -e "signup" -e "sign up" -e "auth" ./
+

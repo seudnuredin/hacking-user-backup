@@ -1,0 +1,27 @@
+requires target.txt
+case based requires extracted_paths_and_params.txt
+case based requires all.txt
+
+# for getting unique hosts
+nohup rota --config /home/deus/documents/rota_config.yml -p 9090 > /dev/null 2>&1 &
+3.2 nohup httpx -l for_httpx.txt -ports 80,443,8009,8080,8081,8090,8180,8443,9443 -timeout 30 -nc -threads 1000 -rl 1000 -silent -proxy http://127.0.0.1:9090 -o all_hosts.txt -H "X-HackerOne-Research: seudxs" -H "User-Agent: Mozilla/5.0 Windows NT 10.0 Win64 AppleWebKit/537.36 Chrome/69.0.3497.100" &
+
+3.2 nohup httpx -l for_httpx.txt -timeout 30 -nc -threads 1000 -rl 1000 -silent -proxy http://127.0.0.1:9090 -o all_hosts.txt -H "X-HackerOne-Research: seudxs" -H "User-Agent: Mozilla/5.0 Windows NT 10.0 Win64 AppleWebKit/537.36 Chrome/69.0.3497.100" &
+
+
+nohup bash ~/scripts/get_hosts.sh 100 &
+
+nohup bash ~/scripts/drl_executor.sh &
+
+# for getting specific subdomains from extraction
+1.cat ./extracted_paths_and_params/extracted_path_wordlist.txt | grep --text -F -f <( cat ./../domains.txt | unfurl format .%r. ) | grep --text -F -e http:// -e https:// | unfurl domains | anew ./../collected_domains.txt | sort -u | massdns -r /home/deus/documents/resolvers-trusted.txt --retry REFUSED --retry FORMERR --retry SERVFAIL -o S -w result.txt ; cat result.txt | sed 's/A.*//; s/CN.*// ; s/\..$//' | anew ./../domains.txt
+
+1.cat ./extracted_paths_and_params/extracted_param_wordlist.txt | grep --text -F -f <( cat ./../domains.txt | unfurl format .%r. ) | anew ./../collected_domains.txt | massdns -r /home/deus/documents/resolvers-trusted.txt --retry REFUSED --retry FORMERR --retry SERVFAIL -o S -w result.txt ; cat result.txt | sed 's/A.*//; s/CN.*// ; s/\..$//' | anew ./../domains.txt
+
+
+nohup bash ~/scripts/locate_source.sh 150310241060 &
+nohup python3.7 ~/scripts/subtarget_manager.py -lsj ./output.json -ih ./hosts.txt -u &
+
+nohup bash ./recon_cycle.sh & // replace the method with ones they didn't have before after sometime
+
+

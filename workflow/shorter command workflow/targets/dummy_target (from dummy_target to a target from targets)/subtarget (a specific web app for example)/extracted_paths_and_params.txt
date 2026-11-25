@@ -1,0 +1,47 @@
+requires sources.txt
+requires active_crawling_and_spidering.txt
+requires passive_crawling.txt
+requires path_brute_force_without_pattern.txt
+
+Param Extraction:
+nohup python3.7 -u ~/scripts/param_miner.py -ew ./ -ee > param_miner.log 2>&1 &
+
+nohup bash -c "~/scripts/param_extractor $(find ./../sources/ ./../active_crawling_and_spidering/ -maxdepth 1 -type d  | grep -v './$' | tr  '\n' ' ') | anew -q extracted_param_wordlist.txt " > param_extractor.log 2>&1 &
+
+cat ./../passive_crawling/passively_crawled_urls_*.txt | unfurl keys | sort -u | anew -q ./extracted_param_wordlist.txt
+
+Endpoint specific parameter sorting:
+
+grep -F -l  -R "et/{id}/multiimageedit/{" -R ./../active_crawling_and_spidering
+rg --fixed-strings --max-filesize=0 --text --max-count=1  --byte-offset --only-matching --threads=0 --no-heading -f <( awk 'length>3' testfile.txt ) ./../active_crawling_and_spidering/sub_4_traffic/prd-static.sf-cdn.com/6c824f0e8dc8c3157f7638feb69096315b60b76f.txt | cut -d: -f2-  | awk '!seen[$0]++' > ./extracted_param_wordlist.txt_new
+ugrep --text -R -F -b -o -f <(awk 'length($0) > 3' extracted_param_wordlist.txt) ./../active_crawling_and_spidering/sub_4_traffic/prd-static.sf-cdn.com/6c824f0e8dc8c3157f7638feb69096315b60b76f.txt > outputs.txt
+mv ./extracted_param_wordlist.txt_new ./extracted_param_wordlist.txt
+
+
+Path Extraction:
+nohup python3.7 -u ~/scripts/path_bruteforce.py -ew ./ -ee  > path_bruteforce.log 2>&1 &
+nohup bash -c "~/scripts/path_extractor $(find ./../sources/ ./../active_crawling_and_spidering/ -maxdepth 1 -type d  | grep -v './$' | tr  '\n' ' ') >> path_extractor_output.txt " > path_bruteforce.log 2>&1 &
+nohup bash -c "~/scripts/path_extractor_rust $(find ./../sources/ ./../active_crawling_and_spidering/ -maxdepth 1 -type d  | grep -v './$' | tr  '\n' ' ') > path_extractor_rust_output.txt " > path_bruteforce.log 2>&1 &
+
+awk '{print $2}' path_extractor_rust_output.txt | rg --text -e '^.{1,400}$' | anew -q extracted_path_wordlist.txt
+
+cat ./../active_crawling_and_spidering/*traffic*/index.txt  | awk '{print $2}' | unfurl paths | anew -q extracted_path_wordlist.txt
+
+nohup bash ~/scripts/directory_based_urls_extraction.sh 10 all url ./../path_brute_force/* &
+cat urls.txt | anew -q ./extracted_path_wordlist.txt
+
+
+cat <(grep -E '^[A-Za-z0-9_-]+$' extracted_param_wordlist.txt)  extracted_path_wordlist.txt <( cat extracted_path_wordlist.txt | unfurl paths) <( cat extracted_path_wordlist.txt | grep --text '\/' | sed 's|\\/|/|g') | rg --text -e '^.{0,200}$'  | anew -q crude_extracted_path_and_param_wordlist.txt
+
+cat <(cat crude_extracted_path_and_param_wordlist.txt | grep --text -v -i -e '^http://' -e '^https://' | perl -ne 'chomp; s{(?<=/)([^/]+)(?=/|$)}{ $1 =~ /[^A-Za-z0-9._-]/ ? "150310241060" : $1 }ge; print "$_\n"') <( cat crude_extracted_path_and_param_wordlist.txt | sed 's/\/PAYLOADDDD\//\/150310241060\//g' | sed 's/\/EXPR\//\/150310241060\//g') | grep -v --text "[^a-zA-Z0-9?\./&%_=-]"  | grep -Fv --text -e /PAYLOADDDD/ -e /EXPR/ | python3 -c "import sys, urllib.parse; print(urllib.parse.unquote(sys.stdin.read()), end='')" | anew -q extracted_path_and_param_wordlist.txt
+
+nohup bash ~/scripts/directory_based_path_extraction.sh 250 &
+
+Key Value Pair Extraction:
+
+nohup bash -c "~/scripts/key_value_pair_extractor $(find ./../sources/ ./../active_crawling_and_spidering/ -maxdepth 1 -type d  | grep -v './$' | tr  '\n' ' ') > key_value_pair_extractor.json " > key_value_pair_extractor.log 2>&1 &
+
+
+
+nohup bash ~/scripts/extract_wordlist.sh &
+

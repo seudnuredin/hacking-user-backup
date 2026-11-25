@@ -1,0 +1,23 @@
+requires extracted_paths_and_params.txt
+
+checks we should perform:
+1. ip validity
+2. cookie requirement
+3. method sensitive
+4. rate limit
+5. naming convention
+6. tech stack extensions
+7. http version identification
+
+# wordlist choice should be based on its preliminary test. if the host matches with path wordlist in preliminary test then path wordlist should be specifically used and this goes for params too
+
+
+# for hosts_with_paths.txt
+nohup python3 -u ~/scripts/path_bruteforce.py -u ./../hosts_with_paths.txt -m GET,POST -rl 1000 -ucw -w ./../../extracted_paths_and_params/path_wordlist.txt -r req.txt -nh 4 -rc ./../../rate_limit_config_all.jsonl -s /150310241060 > path_bruteforce.log 2>&1 &
+
+# for hosts_with_paths_and_params.txt
+nohup python3 -u ~/scripts/path_bruteforce.py -u ./../hosts_with_paths_and_params.txt -m GET,POST -rl 1000 -ucw -w ./../../extracted_paths_and_params/extracted_path_and_param_wordlist.txt -r req.txt -nh 4 -rc ./../../rate_limit_config_all.jsonl -s /150310241060 > path_bruteforce.log 2>&1 &
+
+
+nohup bash ~/scripts/path_brute_force_output_reader.sh all all 1000 ./*.json &
+

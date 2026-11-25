@@ -1,0 +1,32 @@
+requires passive_crawling.txt
+requires input containing dir.txt
+requires active_crawling_and_spidering.txt
+
+nohup python3.7 -u ~/scripts/chars_in_values_finder.py -iv /,.aif,.cda,.mid,.mp3,.mpa,.ogg,.wav,.wma,.wpl,.7z,.arj,.deb,.pkg,.rar,.rpm,.tar,.z,.zip,.bin,.dmg,.iso,.toast,.vcd,.csv,.dat,.db,.log,.mdb,.sav,.sql,.xml,.json,.email,.eml,.msg,.oft,.ost,.pst,.vcf,.bat,.com,.exe,.gadget,.msi,.sh,.wsf,.fnt,.fon,.otf,.ttf,.ai,.bmp,.gif,.ico,.jpeg,.jpg,.png,.ps,.psd,.scr,.svg,.tif,.webp,.asp,.cer,.cfm,.cgi,.pl,.css,.htm,.js,.part,.php,.py,.rss,.xhtml,.key,.odp,.pps,.ppt,.apk,.c,.class,.cpp,.cs,.h,.jar,.java,.swift,.vb,.ods,.xls,.bak,.cab,.cfg,.cpl,.cur,.dll,.dmp,.drv,.icns,.ini,.lnk,.sys,.tmp,.3g2,.3gp,.avi,.flv,.h264,.m4v,.mkv,.mov,.mp4,.mpg,.mpeg,.rm,.swf,.vob,.webm,.wmv,.doc,.docx,.odt,.pdf,.rtf,.tex,.txt,.wpd -mv aif,cda,mid,mp3,mpa,ogg,wav,wma,wpl,7z,arj,deb,pkg,rar,rpm,tar,zip,bin,dmg,iso,toast,vcd,csv,dat,db,log,mdb,sav,sql,xml,json,email,eml,msg,oft,ost,pst,vcf,bat,com,exe,gadget,msi,sh,wsf,fnt,fon,otf,ttf,ai,bmp,gif,ico,jpeg,jpg,png,ps,psd,scr,svg,tif,webp,asp,cer,cfm,cgi,pl,css,htm,js,part,php,py,rss,xhtml,key,odp,pps,ppt,apk,class,cpp,cs,jar,java,swift,vb,ods,xls,bak,cab,cfg,cpl,cur,dll,dmp,drv,icns,ini,lnk,sys,tmp,3g2,3gp,avi,flv,h264,m4v,mkv,mov,mp4,mpg,mpeg,rm,swf,vob,webm,wmv,doc,docx,odt,pdf,rtf,tex,txt,wpd -e path,headers -uf ./../passive_crawling/passively_crawled_urls_0.txt -kd ./../active_crawling_and_spidering > chars_in_values_finder.log 2>&1 &
+
+nohup python3.7 -u ~/scripts/chars_in_values_finder.py -iv /,. -e path,headers -uf ./../passive_crawling/passively_crawled_urls_0.txt > chars_in_values_finder.log 2>&1 &
+
+nohup python3.7 -u ~/scripts/chars_in_values_finder.py -iv deusfile > chars_in_values_finder.log 2>&1 &
+
+grep --color='auto' -F -R -i 'type="file"' ./../active_crawling_and_spidering
+
+cat ./../passive_crawling/pages_with_file_upload_0.txt
+
+
+
+nohup python3 -u ~/scripts/path_bruteforce.py -u ./../../hosts.txt -m GET -rl 10 -w <( cat ./../passive_crawling/pages_with_file_upload_0.txt chars_in_values_finder_output.txt ) > path_bruteforce.log 2>&1 &
+
+1. nohup python3.7 ~/Documents/scripts/recon/path_pattern_prepare.py -uf <(grep ./../passive_crawling/passively_crawled_urls_0.txt -f <(cat ./../passive_crawling/pages_with_file_upload_0.txt ./chars_in_values_finder_output.txt | sed -E 's|https?://([^/]+).*|\1|' | cut -d : -f1)) > path_pattern_prepare.log  &
+
+2. editing pw_*.txt with vim
+
+3. nohup python3 -u ~/scripts/path_bruteforce.py -u <(./../passive_crawling/pages_with_file_upload_0.txt ./chars_in_values_finder_output.txt) -r ./req.txt -m GET -rl 10 -p ./ > path_bruteforce.log 2>&1 &
+
+
+jq -s 'unique_by([.status, .content_length, .headers["content-type"]]) | sort_by(.status) | map(select(.url != null)) | map({url: .url, method: .method, "status": .status, "content_length": .content_length, "content_type": .headers["content-type"]})'  ./*.json
+
+jq -s 'unique_by([.status, .content_length, .headers["content-type"]]) | sort_by(.status) | map(select(.url != null and .status == 200)) | map({url: .url, method: .method, "status": .status, "content_length": .content_length, "content_type": .headers["content-type"]})'  ./*.json
+
+
+
+

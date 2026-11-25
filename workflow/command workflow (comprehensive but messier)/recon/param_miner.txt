@@ -1,0 +1,56 @@
+requires path_brute_force_with*.txt
+requires passive_crawling.
+requires sources
+requires active_crawling_and_spidering
+
+checks we should perform:
+1. ip validity
+2. cookie requirement
+3. method sensitive
+4. rate limit
+5. naming convention
+
+1. ugly diffing: cat ./method_and_url_1.txt | grep -f <(cat ./method_and_url_1.txt | awk '{print $2}' | cut -d / -f4-) | grep -v -f <(cat param_miner_output*.json | jq  | cut -d " " -f -4 | cut -d / -f 2- | grep -F -v -e [ -e ] | cut -d "?" -f -1) > method_and_url_for_param_miner_2.txt
+
+cat constructed_http_reqs_0.json | jq | grep -Fv -f <(cat param_miner_output_2.json | jq  | cut -d " " -f -4  | cut -d "?" -f -1 ) > constructed_http_reqs_1.json
+
+1. ls ./../path_brute_force/path_brute_force_wit*/method_and_url_file_* | grep -v 200 | xargs cat | sort -u | anew -q method_and_url_1.txt
+
+1.1?cat method_and_url_* | awk '{print $2}' | unfurl paths > ./filter_urls.txt
+1.2?httpx -l ./filter_urls.txt -http2 -method -x all -timeout 30 -fc 405 -o rectified_filter_urls.txt -H "X-HackerOne-Research: seudxs" -H "User-Agent: Mozilla/5.0 Windows NT 10.0 Win64 AppleWebKit/537.36 Chrome/69.0.3497.100"
+
+1.1?cat method_and_url_* | awk '{print $2}' | unfurl paths | sort -u > ./filter_paths.txt
+1.2?for method in GET POST PUT DELETE PATCH; do ffuf -request ./req.txt -fc 405 -w ./filter_paths.txt -mc all -json -X "$method" > "${method}_rectified_filter_paths.txt"; done
+
+
+3. nohup python3.7 -u ~/Documents/scripts/recon/request_to_record.py -r ./req.txt -rsl constructed_http_reqs_0.json --proxy http://192.168.233.128:8080 -a /logout,/signout,/sign-out,/log-out,/sign_out,/log_out,/deleteuser > request_to_record.log 2>&1 &
+
+
+
+
+
+
+
+#python3.7 ~/Documents/scripts/recon/common_values_extractor.py -bp ./seudxs_1_wearehackerone_traffic -l 3 > values.txt
+
+
+
+
+nohup bash ~/scripts/directory_based_urls_extraction.sh 100 json mf_url ./../path_brute_force/*/method_and_url_file_within_threshold* &
+cat urls.txt <(find ./../path_brute_force/*/method_and_url_file_exceeding_threshold* -type f -exec sh -c 'head -n 1 "$1"' _ {} \;) <(find ./../path_brute_force/*/method_and_url_file_exceeding_threshold* -type f -exec sh -c 'tail -n 1 "$1"' _ {} \;) | awk '!seen[$0]++' | awk '$3 ~ /\/json/' | anew -q method_and_url.txt
+nohup python3 ~/scripts/contextualize_access.py -u <(awk '{print $2}' method_and_url.txt) -w ~/documents/delete_words.txt &
+awk 'NR==FNR { lines[$0]; next } !($2 in lines)' <(cat grouped_paths.json  | jq -r '.[][]' | sort -u ) method_and_url.txt > method_and_url_2.txt
+mv method_and_url_2.txt method_and_url.txt
+python3 ~/scripts/construct_http_out_of_path_and_method.py -r req.txt -map ./method_and_url.txt
+
+cat ./../passive_crawling/passively_crawled_urls_*.txt ./../extracted_paths_and_params/extracted_param_wordlist.txt | iconv -f UTF-8 -t UTF-8//IGNORE | unfurl keypairs | sort -u | sed 's/^/https:\/\/dummytarget.com\/?/g' | grep --text -v '=$' | uro  > keypairs.txt
+
+#cat ./method_and_url.txt | awk '{print $2}' | unfurl paths | awk '!seen[$0]++' > paths_to_locate.txt
+#nohup bash ~/scripts/path_locator.sh ./paths_to_locate.txt | awk '!seen[$0]++' > path_locator_output.jsonl &
+
+nohup python3.7 -u ~/scripts/param_miner.py -r req.txt -te 30 -sas -fpo -ts ./../seudxs_token_gen.py -rsl ./constructed_http_reqs_0.json -dp 3 -xc 500 -fs 429 -w ./../extracted_paths_and_params/extracted_param_wordlist.txt -up ./keypairs.txt -kvp ./../extracted_paths_and_params/key_value_pair_extractor.jsonl -a /logout,/signout,/sign-out,/log-out,/sign_out,/log_out,/deleteuser -rc ./../rate_limit_config_all.jsonl > param_miner.log 2>&1 &
+
+nohup python3.7 -u ~/scripts/param_miner.py -r req.txt -te 30 -fpo -ts ./../seudxs_token_gen.py -rsl ./constructed_http_reqs_0.json -dp 3 -xc 500 -fs 429 -w ./../extracted_paths_and_params/extracted_param_wordlist.txt -up ./keypairs.txt -kvp ./../extracted_paths_and_params/key_value_pair_extractor.jsonl -a /logout,/signout,/sign-out,/log-out,/sign_out,/log_out,/deleteuser -rc ./../rate_limit_config_all.jsonl > param_miner.log 2>&1 &
+
+nohup python3.7 -u ~/scripts/param_miner.py -r req.txt -te 30 -ts ./../seudxs_token_gen.py -rsl ./constructed_http_reqs_0.json -dp 3 -xc 500 -fs 429 -w ./../extracted_paths_and_params/extracted_param_wordlist.txt -up ./keypairs.txt -kvp ./../extracted_paths_and_params/key_value_pair_extractor.jsonl -a /logout,/signout,/sign-out,/log-out,/sign_out,/log_out,/deleteuser -rc ./../rate_limit_config_all.jsonl > param_miner.log 2>&1 &
+

@@ -1,0 +1,31 @@
+requires extracted_paths_and_params.txt
+
+
+nohup rota --config /home/deus/documents/rota_config.yml > /dev/null 2>&1 &
+nohup bash -c 'ffuf -u "https://www.pandora.com:443/services/ajax/?method=FUZZ" -json -w ./../extracted_paths_and_params/extracted_param_wordlist.txt -mc all -s -rate 25 -X GET -H "X-HackerOne-Research: seudxs" -H "User-Agent: Mozilla/5.0 Windows NT 10.0 Win64 AppleWebKit/537.36 Chrome/69.0.3497.100" -noninteractive -x http://127.0.0.1:8080 > ./ffuf_output.json' &
+
+cat services_xmlrpc_method_fuzz.json | jq '.results.[].status' | sort -u
+cat services_xmlrpc_method_fuzz.json | jq -r '.results.[] | select(.status == 200) | .input.FUZZ' | sort -u | sed 's/^/GET /g'
+
+
+
+
+# graphql
+nohup bash -c "~/scripts/string_extractor query,mutation $(find ./../sources/ ./../active_crawling_and_spidering/ -maxdepth 1 -type d  | grep -v './$' | tr  '\n' ' ') > string_extractor_output.txt " > string_extractor.log 2>&1 &
+rg -i -e 'query\s+[a-zA-Z0-9_-]+\s*[\({]' -e 'mutation\s+[a-zA-Z0-9_-]+\s*[\({]' string_extractor_output.txt > graphql_in_blob.txt
+rg --pcre2 -o '(query|mutation)\s+[a-zA-Z0-9_-]+\s*(?=\(|\{)' graphql_in_blob.txt | awk '{print $2}' | anew -q graphql_names.txt
+#bash ~/scripts/graphql_trimmer.sh | sort -u > ./graphql_raw.txt
+nohup bash -c "~/scripts/graphql_trimmer | anew -q ./graphql_raw.txt" &
+python3 ~/scripts/graphql_constructor.py ./graphql_raw.txt | anew -q graphql_bodies.txt
+
+#cat key_value_pair_extractor.json | jq |  sed -nE 's/.*(query|mutation)[[:space:]]+([^ ({]+).*/\2/p' | anew -q graphql_names.txt
+#sed 's/.*/\\s*(query|mutation) &/' graphql_names.txt   > graphql.patterns
+#grep -i -E -f graphql.patterns <(cat key_value_pair_extractor.json | jq) | nl | cut -d : -f2- | sed -E "s/^\s*(['\"\`])?(.*)\\1\s*$/\2/" | grep -i -e ^query -e ^mutation  | sed 's/\\\\/\\/g; s/\\"/"/g'  |  sed 's/\\n$//g' | sort -u > graphql_raw.txt
+#python3 ~/scripts/graphql_constructor.py ./graphql_raw.txt > graphql_bodies.txt
+
+
+
+
+# graphql introspection
+{__schema {   mutationType {     fields {       name       args {         name         type {           kind           name        ofType {             kind name ofType {               kind name             }           }         }         defaultValue       } } } } }
+

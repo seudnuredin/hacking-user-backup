@@ -1,0 +1,26 @@
+requires target.txt and/or input containing dir.txt
+
+
+# sources dir
+# method 1
+1. cat ./../hosts.txt | unfurl format .%r. | sort -u
+nohup python3 ~/scripts/source_based.py -f js_download -t subtarget -c / -l 1000 &
+
+
+# method 2
+nohup python3 ~/scripts/source_based.py -f js_download -t subtarget -c / -l 0 &
+nohup python3 ~/scripts/source_based.py -f html_download -t subtarget -c / -l 10000 &
+
+# merging
+rsync -a --remove-source-files ./source*/ merged_source/
+
+# apk dir
+sudo python ~/Desktop/decompiler.py
+nohup tar -xzf ./decompiled_apks.tar.gz &
+rsyncing apks to it
+
+# repo dir
+download repos guided by fuzz
+
+
+

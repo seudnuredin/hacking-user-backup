@@ -1,0 +1,9 @@
+/logout
+/signout
+/sign-out
+/log-out
+/sign_out
+/log_out
+/deleteuser
+/blog
+/wp-content

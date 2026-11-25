@@ -1,0 +1,38 @@
+# for directory discovery
+nohup bash ~/scripts/get_directories.sh 100 ./ &
+
+# for hosts discovery
+nohup bash ~/scripts/get_hosts_and_their_appropriate_wordlist.sh ./ &
+
+# for content-type discovery
+cat ./*/method* | awk '{print $3}' | sort -u | grep -F -f /usr/share/seclists/Discovery/Web-Content/web-all-content-types.txt
+
+
+
+# for contextualizing access
+find ./ ./../bypass_blocked_path/ | grep -F method_and_url_file_within_threshold | xargs cat | awk '$3 ~ /\/'"json"'/ {print $2}'  | sort -u > all_urls.txt
+nohup python3 ~/scripts/contextualize_access.py -u ./all_urls.txt &
+
+cat grouped_paths.json | jq 'to_entries
+    | map({
+        key,
+        count: (.value | length),
+        unique_hosts: (.value 
+            | map(. | split("/")[2]) 
+            | unique 
+            | length)
+      })
+    | sort_by(.unique_hosts)
+    | reverse'
+
+cat grouped_paths.json | jq 'to_entries
+    | map({
+        key,
+        count: (.value | length),
+        unique_hosts: (.value 
+            | map(. | split("/")[2]) 
+            | unique 
+            | length)
+      })
+    | sort_by(.count)
+    | reverse'

@@ -1,0 +1,30 @@
+optionally requires passive_crawling.txt
+optionally requires input containing dir.txt
+optionally requires active_crawling_and_spidering.txt
+optionally requires param_miner.txt
+
+at least one of the above applications is required
+
+--cat ./../../passive_crawling/passively_crawled_urls_0.txt | grep --text -e "?" -e "subdomain.domain.tld" > passively_crawled_urls_0_with_params.txt
+
+--nohup httpx -l passively_crawled_urls_0_with_params.txt -timeout 10 -nc -threads 50 -rl 100 -silent -o resolved_passively_crawled_urls_0_with_params.txt &
+
+awk 'NR==FNR {
+    gsub(/[\r\n]+/, "", $0);  # Remove trailing newlines or carriage returns
+    hostnames[$0];            # Store hostnames in an array
+    next
+} {
+    match($0, /^(https?:\/\/)?([^\/]+)/, m);  # Extract the hostname (with port if present)
+    if (m[2]) {
+        split(m[2], host_and_port, ":");      # Separate hostname from port
+        if (host_and_port[1] in hostnames)   # Check if the hostname matches
+            print $0;
+    }
+}' <(cat ./../../hosts.txt | cut -d/ -f3 | cut -d: -f1 | sort -u ) passively_crawled_urls_0_with_params.txt > resolved_passively_crawled_urls_0_with_params.txt
+
+
+nohup python3.7 ~/scripts/sqli.py -r req.txt -rl 1000 --technique EBT --level 3 -eh -rsl ./../../param_miner/param_miner_output.json &
+nohup python3.7 ~/scripts/sqli.py -r req.txt -te 30 -ts ./../seudxs_token_gen.py -rl 1000 --technique EBT --level 3 -eh -rsl ./../../param_miner/param_miner_output_198.jsonl > sqli.log &
+
+grep -i -F -l -R  "is vulnerable" ./output
+

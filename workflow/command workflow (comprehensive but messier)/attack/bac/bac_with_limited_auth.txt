@@ -1,0 +1,11 @@
+requires input containing dir.txt
+
+nohup python3.7 -u ~/scripts/bac_with_limited_auth.py -r ./attacker_req.txt -a /logout,/signout,/sign-out,/log-out,/sign_out,/log_out,/deleteuser > bac_with_limited_auth.log 2>&1 &
+
+nohup python3 ~/scripts/fuzz_reader.py -ft status -ip all_parametersss  > injection_points.txt&
+nohup python3 ~/scripts/fuzz_reader.py -ft status -ip example_param  > injection_points.txt&
+
+nohup python3 ~/scripts/fuzz_reader.py -ft body -ip all_parametersss  -jk errors  > errors_key_shared.txt&
+nohup python3 ~/scripts/fuzz_reader.py -ft body -ip example_param  -jk errors  > shared_output_files.txt&
+
+cat documentId_based_status_injection_points.txt | awk '{print $1}' | grep -v stat | sed 's/json/body/g' | sed 's/^/.\/output\/normal\//g' | xargs cat

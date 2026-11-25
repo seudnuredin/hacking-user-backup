@@ -1,0 +1,8 @@
+delete
+remove
+destroy
+purge
+cancel
+deactivate
+archive
+uninstall

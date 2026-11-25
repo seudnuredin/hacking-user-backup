@@ -1,0 +1,17 @@
+requires input containing dir.txt
+
+nohup python3.7 -u ~/scripts/bac_basic.py -r ./req.txt -a /logout,/signout,/sign-out,/log-out,/sign_out,/log_out,/deleteuser > basic_bac.log 2>&1 &
+nohup python3.7 -u ~/scripts/bac_basic.py -r ./req.txt -ts ./../../seudxs_token_gen.py -te 5 -a /logout,/signout,/sign-out,/log-out,/sign_out,/log_out,/deleteuser > basic_bac.log 2>&1 &
+
+nohup python3 ~/scripts/fuzz_reader.py -ft status -ip all_parametersss -nd ./output/normal > injection_points.txt&
+nohup python3 ~/scripts/fuzz_reader.py -ft status -ip example_param -nd ./output/normal > injection_points.txt&
+
+nohup python3 ~/scripts/fuzz_reader.py -ft body -ip all_parametersss -nd ./output/normal -jk errors  > errors_key_shared.txt&
+nohup python3 ~/scripts/fuzz_reader.py -ft body -ip example_param -nd ./output/normal -jk errors  > shared_output_files.txt&
+
+nl injection_points.txt | grep status:
+
+cat injection_points.txt | sed -n '1,3565p' | grep -v status | grep -i -e id -e slug -e email -e key -e subpath -e ref | sed 's/json/body/g' | xargs cat | jq 
+
+cat documentId_based_status_injection_points.txt | awk '{print $1}' | grep -v stat | sed 's/json/body/g' | sed 's/^/.\/output\/normal\//g' | xargs cat
+

@@ -1,0 +1,28 @@
+requires path_brute_force_without_auth.txt
+
+
+# source ip based
+cp -r ip_or_hostname_used_in_the_headers desired_ip_or_hostname_like_one_of_target's_ip_including_the_ip_of_domain
+
+# destination ip based
+
+# authentication based
+
+nohup bash ~/scripts/locate_source.sh 150310241060 &
+
+grep -l -R -F -i -e "login" -e "signin" -e "sign-in" -e "sign in" -e "log in" -e "log-in" -e "register" -e "sign-up" -e "signup" -e "sign up" -e "authenticate" -e "oauth" ./../active_crawling_and_spidering/ ./../sources/ | xargs -n1 dirname | rev | cut -d /  -f1 | rev | grep -F -f <(cat ./../../domains.txt | unfurl format .%r.) | sort -u
+grep -l -R -F -i -e "login" -e "signin" -e "sign-in" -e "sign in" -e "log in" -e "log-in" -e "register" -e "sign-up" -e "signup" -e "sign up" ./../active_crawling_and_spidering/ ./../sources/  | xargs grep -R -l -F 'Host: sub.target.com'
+find ./../active_crawling_and_spidering/  -type f | grep '/paths.txt$' | xargs wc -l | sort -nr | awk '{print $2}' | grep active_cra | xargs -n1 dirname | rev | cut -d /  -f1 | rev | awk '!seen[$0]++'  | head
+
+grep -R   "application/json" ./../path_brute_force/*/method* | grep -F -i -e "login" -e "signin" -e "sign-in" -e "sign in" -e "log in" -e "log-in" -e "register" -e "sign-up" -e "signup" -e "sign up" -e "authenticate" -e "oauth"
+
+
+nohup bash ~/scripts/directory_based_urls_extraction.sh 5 all mf_url ./../path_brute_force/* &
+nohup python3.7 -u ~/scripts/cookie_and_custom_header_collector.py -mf ./urls.txt -rl 400 -rc ./../rate_limit_config_min_50.jsonl > cookie_and_custom_header_collector.log 2>&1 &
+
+# http parts tampering ig
+make a wrapper for BypassFuzzer here
+
+
+
+

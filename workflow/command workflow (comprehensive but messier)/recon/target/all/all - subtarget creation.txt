@@ -1,0 +1,11 @@
+requires target.txt
+requires extracted_paths_and_params.txt
+
+nohup bash ~/scripts/locate_source.sh 150310241060 &
+cat output.json | jq 'to_entries | sort_by(.value.lines) | reverse | from_entries'
+
+echo api.interested_domain.com | anew -q ./hosts.txt
+
+nohup python3.7 ~/scripts/subtarget_manager.py -lsj ./output.json -ih ./hosts.txt &
+
+

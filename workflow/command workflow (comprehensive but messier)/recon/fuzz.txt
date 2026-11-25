@@ -1,0 +1,55 @@
+requires passive_crawling.txt
+requires input containing dir.txt
+requires active_crawling_and_spidering.txt
+
+nohup python3.7 -u ~/scripts/fuzz.py -r ./req.txt -uf ./../passive_crawling/passively_crawled_urls_0.txt -kd ./../../active_crawling_and_spidering -a /logout,/signout,/sign-out,/log-out,/sign_out,/log_out,/deleteuser > fuzz.log 2>&1 &
+nohup python3.7 -u ~/scripts/fuzz.py -r ./req.txt -rsl ./access_list.json -a /logout,/signout,/sign-out,/log-out,/sign_out,/log_out,/deleteuser > fuzz.log 2>&1 &
+
+nohup python3 ~/scripts/fuzz_reader.py -ft status -ip all_parametersss > injection_points.txt&
+nohup python3 ~/scripts/fuzz_reader.py -ft status -ip example_param > injection_points.txt&
+
+nohup python3 ~/scripts/fuzz_reader.py -ft body -ip all_parametersss -jk errors  > errors_key_shared.txt&
+nohup python3 ~/scripts/fuzz_reader.py -ft body -ip example_param -jk errors  > shared_output_files.txt&
+
+cat documentId_based_status_injection_points.txt | awk '{print $1}' | grep -v stat | sed 's/json/body/g' | sed 's/^/.\/*\/*\//g' | xargs cat
+
+# unexpected input output parser
+find ./output -type f -exec sh -c 'jq empty "{}" >/dev/null 2>&1 && cat "{}" | jq -r ".. | strings"' \; | awk '!seen[$0]++'
+
+find ./output -type f -exec sh -c 'cat "$1" | jq -r ".. | strings" 2>/dev/null || true' _ {} \; | awk '!seen[$0]++'
+
+find ./output -type f -exec sh -c 'cat "$1" | htmlq -t "*" 2>/dev/null || true' _ {} \; | awk '!seen[$0]++'
+
+
+
+
+
+nohup bash ~/scripts/get_hosts.sh &
+nohup rota --config /home/deus/documents/rota_config.yml -p 9999 > /dev/null 2>&1 &
+
+# home page parser
+nohup httpx -l hosts.txt -timeout 30 -nc -threads 100 -rl 100 -silent -proxy http://127.0.0.1:9999 -fr -sr -srd ./homepage -H "X-HackerOne-Research: seudxs" -H "User-Agent: Mozilla/5.0 Windows NT 10.0 Win64 AppleWebKit/537.36 Chrome/69.0.3497.100" &
+
+find ./homepage -type f -exec sh -c 'cat "$1" | jq -r ".. | strings" 2>/dev/null || true' _ {} \; | awk '!seen[$0]++'
+
+find ./homepage -type f -exec sh -c 'cat "$1" | htmlq -t "*" 2>/dev/null || true' _ {} \; | awk '!seen[$0]++'
+
+# uri too long response parser
+nohup httpx -l hosts.txt -path <(echo /$(cat <(yes a | tr -d '\n' | head -c 10240))) -timeout 30 -nc -threads 100 -rl 100 -silent -proxy http://127.0.0.1:9999 -fr -sr -srd ./uri_too_long_response -H "X-HackerOne-Research: seudxs" -H "User-Agent: Mozilla/5.0 Windows NT 10.0 Win64 AppleWebKit/537.36 Chrome/69.0.3497.100" &
+
+find ./uri_too_long_response -type f -exec sh -c 'cat "$1" | jq -r ".. | strings" 2>/dev/null || true' _ {} \; | awk '!seen[$0]++'
+
+find ./uri_too_long_response -type f -exec sh -c 'cat "$1" | htmlq -t "*" 2>/dev/null || true' _ {} \; | awk '!seen[$0]++'
+
+# invalid content type
+nohup bash ~/scripts/get_directories.sh ./../* &
+cat pw_* > urls.txt
+cat hosts.txt | anew -q urls.txt
+
+nohup httpx -l urls.txt -timeout 30 -nc -threads 100 -rl 100 -silent -proxy http://127.0.0.1:9999 -fr -sr -srd ./invalid_content_type -H "X-HackerOne-Research: seudxs" -H "User-Agent: Mozilla/5.0 Windows NT 10.0 Win64 AppleWebKit/537.36 Chrome/69.0.3497.100" -H "Content-Type: AAAA" -body AAAAA -x POST &
+
+find ./invalid_content_type -type f -exec sh -c 'cat "$1" | jq -r ".. | strings" 2>/dev/null || true' _ {} \; | awk '!seen[$0]++'
+
+find ./invalid_content_type -type f -exec sh -c 'cat "$1" | htmlq -t "*" 2>/dev/null || true' _ {} \; | awk '!seen[$0]++'
+
+banner grabbing bruh

@@ -1,0 +1,55 @@
+nohup python3 ~/scripts/get_programs.py &
+
+
+sort them by latest:
+jq -s '[.[][] 
+  | select(.scope? != null and (.scope | type == "array")) 
+  | .scope[] 
+  | select(.data? != null and (.data | type == "array")) 
+  | .data[] 
+  | select(.type == "structured-scope" and .attributes.eligible_for_bounty == true)] 
+  | sort_by(.attributes.created_at)' programs_and_their_scopes_output_*.json > sorted_structured_scope.json
+
+sort them by latest and only wildcards:
+jq -s '[.[][] 
+  | select(.scope? != null and (.scope | type == "array")) 
+  | .scope[] 
+  | select(.data? != null and (.data | type == "array")) 
+  | .data[] 
+  | select(.type == "structured-scope" and .attributes.eligible_for_bounty == true)  
+  | select(.attributes.asset_identifier | contains("*"))] 
+  | sort_by(.attributes.created_at)' programs_and_their_scopes_output_*.json > wildcard_sorted_structured_scope.json
+
+get open scopes:
+jq -s '[.[][] 
+  | select(.scope? != null and (.scope | type == "array")) 
+  | select(.program.attributes.open_scope == true) 
+  | .program.attributes.handle]' ./programs_and_their_scopes_output_*.json
+
+
+get 2024 and 2025's programs:
+jq -r -s '[.[][] 
+  | select(.scope? != null and (.scope | type == "array")) 
+  | .scope[] 
+  | select(.data? != null and (.data | type == "array")) 
+  | .data[] 
+  | select(.type == "structured-scope" 
+           and .attributes.eligible_for_bounty == true 
+           and ((.attributes.created_at | startswith("2024")) 
+                or (.attributes.created_at | startswith("2025"))))
+] 
+| sort_by(.attributes.created_at) 
+| map(.attributes.asset_identifier) | .[]' programs_and_their_scopes_output_*.json | unfurl apexes | sort -u > domains.txt
+
+get android apps:
+jq -s '[.[][]
+  | select(.scope? != null and (.scope | type == "array"))
+  | .scope[]
+  | select(.data? != null and (.data | type == "array"))
+  | .data[]
+  | select(.type == "structured-scope" and .attributes.asset_type == "GOOGLE_PLAY_APP_ID")]
+  | sort_by(.attributes.created_at)' programs_and_their_scopes_output_*.json | sudo tee sorted_structured_scope.json
+
+nohup python3 ~/scripts/source_counter.py -d ./domains.txt &
+
+awk 'NR==FNR{a[$0]=$0; next} {if($0 in a) print $0}'  <(cat source_counter_output  | awk 'length($3) > 100 {print $1}') <(jq -r '.[].attributes.asset_identifier' sorted_structured_scope.json | unfurl apexes | awk '!seen[$0]++') | tail

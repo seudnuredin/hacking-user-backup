@@ -1,0 +1,6 @@
+requires subtarget.txt
+
+using recon.py:
+1. passive urls resources crawling
+2. passive urls with forms crawling
+

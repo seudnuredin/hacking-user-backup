@@ -1,0 +1,28 @@
+nohup bash ~/scripts/get_strings_to_be_searched.sh &
+
+nohup python3 ~/scripts/associated_repo_puller.py -q queries.txt -sq special_queries.txt -bq banner_queries.txt &
+
+#cat <(find . -mindepth 3 -maxdepth 3 -type d -printf '%f\n') <( find . -mindepth 3 -maxdepth 3 -type d -printf '%f\n' | python3.7 -c 'import humps; import sys; print(humps.kebabize(sys.stdin.read()))' | tr '-' '\n' ) | sort -fu | awk 'length($0) > 4' | anew special_queries_old.txt > special_queries.txt
+
+nohup bash ~/scripts/get_notable_repos.sh &
+
+nohup python3 ~/scripts/associated_repo_puller.py -sq special_queries.txt &
+
+
+nohup bash -c "~/scripts/path_extractor_rust $(find ./ -maxdepth 1 -type d  | grep -v './$' | tr  '\n' ' ') > path_extractor_rust_output.txt " > path_bruteforce.log 2>&1 &
+
+awk '{print $2}' path_extractor_rust_output.txt | rg --text -e '^.{1,400}$' | anew -q extracted_path_wordlist.txt
+
+nohup bash -c "tar -czf downloads.tar.gz downloads/ && rm -rf downloads/" &
+
+
+
+
+nohup bash ~/scripts/get_banner.sh &
+manually exporting using wappalyzer extension on authenticated paths
+
+nohup python3 ~/scripts/associated_repo_puller.py -bq banner_queries.txt -gb &
+
+nohup bash ~/scripts/shorten_repo_wordlist.sh &
+
+nohup bash ~/scripts/directory_based_path_extraction.sh 5 &
